@@ -1,4 +1,4 @@
-name: Build Android APK
+\name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -20,14 +20,17 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y -f libunwind-dev
-        # FIX: Added gettext for 'autopoint' compiler tool support
-        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 gettext
+        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 gettextautopoint gettext
         
-        # Macro tree links recovery for autoconf
-        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
-        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltsugar.m4 || true
-        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltversion.m4 || true
-        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/lt~obsolete.m4 || true
+        # COMPLETE PATH FIX: Ensuring autopoint and libtool are completely linked in system execution bin
+        sudo ln -sf /usr/bin/autopoint /usr/local/bin/autopoint || true
+        sudo ln -sf /usr/bin/autoreconf /usr/local/bin/autoreconf || true
+        
+        # Macro tree links recovery for autoconf compiler mapping
+        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
+        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltsugar.m4 || true
+        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltversion.m4 || true
+        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/lt~obsolete.m4 || true
         sudo cp /usr/share/aclocal/libtool.m4 /usr/share/autoconf/autoconf/ || true
         sudo cp /usr/share/aclocal/ltdl.m4 /usr/share/autoconf/autoconf/ || true
 
@@ -47,3 +50,5 @@ jobs:
         YES=1 buildozer -v android debug
       env:
         ANDROID_HOME: /usr/local/lib/android/sdk
+        # Force system path tracking for underlying compilation subprocesses
+        PATH: /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
