@@ -25,7 +25,7 @@ fullscreen = 0
 
 # Requirements
 # Optimized for Android + Pandas/Numpy support
-requirements = python3,hostpython3,kivy==2.3.0,kivymd==1.1.1,numpy,pandas,yfinance,requests,certifi,plyer,pyjnius,urllib3,chardet,idna
+requirements = python3,kivy==2.3.0,kivymd==1.1.1,numpy,pandas,yfinance,requests,certifi,plyer,pyjnius,urllib3,chardet,idna
 
 # Permissions
 android.permissions = INTERNET, VIBRATE, FOREGROUND_SERVICE, POST_NOTIFICATIONS
