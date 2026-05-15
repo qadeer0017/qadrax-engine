@@ -20,7 +20,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y -f libunwind-dev
-        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 gettextautopoint gettext
+        # FIX: Separated 'autopoint' and 'gettext' with correct spacing
+        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 autopoint gettext
         
         # COMPLETE PATH FIX: Ensuring autopoint and libtool are completely linked in system execution bin
         sudo ln -sf /usr/bin/autopoint /usr/local/bin/autopoint || true
@@ -50,5 +51,4 @@ jobs:
         YES=1 buildozer -v android debug
       env:
         ANDROID_HOME: /usr/local/lib/android/sdk
-        # Force system path tracking for underlying compilation subprocesses
         PATH: /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
