@@ -5,7 +5,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Stable LTS environment for clean python-for-android compilation
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout code
@@ -19,19 +20,23 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin
-        # Force-link the macro directories globally to completely bypass the LT_SYS error
+        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4
+        
+        # Global macro tree recovery for autoconf
         sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
+        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltsugar.m4 || true
+        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltversion.m4 || true
+        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/lt~obsolete.m4 || true
 
     - name: Install Buildozer
       run: |
         pip install --upgrade pip
-        pip install buildozer Cython virtualenv
+        pip install "buildozer>=1.5.0" Cython virtualenv
 
-    - name: Clean Corrupt Buildozer Cache
+    - name: Reset Workspace Cache
       run: |
-        # Yeh line har baar kharab/corrupt adhoori compilation ko mita degi
         rm -rf .buildozer/
+        rm -rf bin/
         rm -rf ~/.buildozer/
 
     - name: Build with Buildozer
@@ -39,11 +44,3 @@ jobs:
         YES=1 buildozer -v android debug
       env:
         ANDROID_HOME: /usr/local/lib/android/sdk
-        # Adding core host flags to prevent internal system overrides
-        REBUILD_recipes: "hostpython3,libffi"
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Qadrax-Engine-APK
-        path: bin/*.apk
