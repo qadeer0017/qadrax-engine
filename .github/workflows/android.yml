@@ -19,15 +19,18 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        # FIX: Missing dependencies ko force-fix ke sath install karna
         sudo apt-get install -y -f libunwind-dev
         sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4
         
-        # Macro tree links recovery for autoconf
-        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
-        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltsugar.m4 || true
-        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltversion.m4 || true
-        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/lt~obsolete.m4 || true
+        # COMPLETE MACRO FIX: System ke aclocal paths ko automatically force-link aur merge karna
+        sudo aclocal --print-acdir
+        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
+        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltsugar.m4 || true
+        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltversion.m4 || true
+        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/lt~obsolete.m4 || true
+        # Copying full package configurations directly into build system paths
+        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/autoconf/autoconf/ || true
+        sudo cp /usr/share/aclocal/ltdl.m4 /usr/share/autoconf/autoconf/ || true
 
     - name: Install Buildozer
       run: |
