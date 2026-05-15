@@ -20,19 +20,27 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin
-        # FIX: Macro link issue for libffi/autoconf compiler
-        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
+        # Force-link the macro directories globally to completely bypass the LT_SYS error
+        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
 
     - name: Install Buildozer
       run: |
         pip install --upgrade pip
         pip install buildozer Cython virtualenv
 
+    - name: Clean Corrupt Buildozer Cache
+      run: |
+        # Yeh line har baar kharab/corrupt adhoori compilation ko mita degi
+        rm -rf .buildozer/
+        rm -rf ~/.buildozer/
+
     - name: Build with Buildozer
       run: |
         YES=1 buildozer -v android debug
       env:
         ANDROID_HOME: /usr/local/lib/android/sdk
+        # Adding core host flags to prevent internal system overrides
+        REBUILD_recipes: "hostpython3,libffi"
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
