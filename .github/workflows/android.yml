@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -19,28 +19,14 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y -f libunwind-dev
-        # FIX: Separated 'autopoint' and 'gettext' with correct spacing
         sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 autopoint gettext
-        
-        # COMPLETE PATH FIX: Ensuring autopoint and libtool are completely linked in system execution bin
-        sudo ln -sf /usr/bin/autopoint /usr/local/bin/autopoint || true
-        sudo ln -sf /usr/bin/autoreconf /usr/local/bin/autoreconf || true
-        
-        # Macro tree links recovery for autoconf compiler mapping
-        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 || true
-        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltsugar.m4 || true
-        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltversion.m4 || true
-        sudo ln -sf /usr/share/aclocal/libtool.m4 /usr/share/aclocal/lt~obsolete.m4 || true
-        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/autoconf/autoconf/ || true
-        sudo cp /usr/share/aclocal/ltdl.m4 /usr/share/autoconf/autoconf/ || true
 
     - name: Install Buildozer
       run: |
         pip install --upgrade pip
         pip install "buildozer>=1.5.0" Cython virtualenv
 
-    - name: Reset Workspace Cache
+    - name: Clean Previous Broken Cache
       run: |
         rm -rf .buildozer/
         rm -rf bin/
@@ -48,7 +34,8 @@ jobs:
 
     - name: Build with Buildozer
       run: |
+        # P4A_BOOTSTRAP_COMPAT force-bypasses the broken legacy build chains
         YES=1 buildozer -v android debug
       env:
         ANDROID_HOME: /usr/local/lib/android/sdk
-        PATH: /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+        P4A_BOOTSTRAP_COMPAT: "1"
