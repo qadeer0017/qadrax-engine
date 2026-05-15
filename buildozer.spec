@@ -71,7 +71,7 @@ android.apptheme = "@android:style/Theme.NoTitleBar"
 android.presplash_color = #000000
 
 # Build mode
-p4a.bootstrap = sdl2
+p4a.branch = master
 
 # Recommended for stability
 osx.python_version = 3
