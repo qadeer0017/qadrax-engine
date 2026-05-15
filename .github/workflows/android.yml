@@ -21,18 +21,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 autopoint gettext
 
-    - name: Pre-configure Global Autoconf Macros
-      run: |
-        # Hard-injecting the missing compiler options into system paths before buildozer initializes
-        sudo aclocal || true
-        echo "m4_pattern_allow([^LT_])" | sudo tee -a /usr/share/autoconf/autoconf/autoconf.m4
-
-    - name: Install Buildozer
+    - name: Install Updated Buildozer & P4A (The Ultimate Fix)
       run: |
         pip install --upgrade pip
-        pip install "buildozer>=1.5.0" Cython virtualenv
+        pip install virtualenv Cython
+        # Master branch toolchain install kar rahe hain jismein libffi compiler issue pre-patched hai
+        pip install git+https://github.com/kivy/python-for-android.git@master
+        pip install git+https://github.com/kivy/buildozer.git@master
 
-    - name: Clean Workspace Cache
+    - name: Reset Previous Broken Cache
       run: |
         rm -rf .buildozer/
         rm -rf bin/
