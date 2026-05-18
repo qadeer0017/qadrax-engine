@@ -14,7 +14,8 @@ env:
 
 jobs:
   build-android:
-    runs-on: ubuntu-latest
+    # Strict Legacy Matrix Core match karne ke liye Ubuntu 22.04 use kar rahe hain
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout Code Repository
@@ -31,7 +32,7 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Install System Dependencies & Build Tools (Strict Reset)
+    - name: Install System Dependencies & Stable Build Tools
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
@@ -61,15 +62,14 @@ jobs:
           bzip2 \
           libbz2-dev
 
-    - name: Install Cython & Buildozer Package Tools
+    - name: Install Cython & Buildozer Tools
       run: |
         pip install --upgrade pip
         pip install "cython<3.0.0"
         pip install buildozer virtualenv sh
 
-    - name: Hard Purge Directory Structure
+    - name: Force Purge Artifact System
       run: |
-        # Khas tor par purane tute hue platform dependencies ko clear karna
         rm -rf ~/.buildozer
         rm -rf .buildozer
         mkdir -p .buildozer
