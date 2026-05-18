@@ -7,7 +7,6 @@ on:
     branches: [ "master", "main" ]
   workflow_dispatch:
 
-# Global level par system default paths ko overwrite karna
 env:
   ANDROID_NDK_HOME: ""
   ANDROID_NDK_ROOT: ""
@@ -43,7 +42,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildozer-
 
-    - name: Install System Dependencies & Build Tools (Strict Grid)
+    - name: Install System Dependencies & Build Tools (Macro Fix)
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
@@ -68,6 +67,7 @@ jobs:
           autoconf \
           automake \
           libtool \
+          libtool-bin \
           gettext \
           m4 \
           patch \
@@ -83,16 +83,14 @@ jobs:
         pip install "cython<3.0.0"
         pip install buildozer virtualenv sh
 
-    - name: Complete System Purge & Clean
+    - name: Force Purge Corrupted Macro Components
       run: |
-        # Purane cache directories aur glt configuration matrices ko poori tarha delete karna
         rm -rf ~/.buildozer/android/platform/*
         rm -rf .buildozer/android/platform/*
         buildozer android clean || true
 
     - name: Execute Android APK Target Production Build
       run: |
-        # Explicit version control bypass pattern
         buildozer -v android debug
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
