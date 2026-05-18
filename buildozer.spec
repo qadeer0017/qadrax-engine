@@ -20,6 +20,9 @@ android.private_storage = 1
 android.accept_sdk_license = True
 android.skip_bytecode = 1
 
+# Is line ko add/verify karein taaki libffi compile na ho jo error de rahi hai
+android.blacklist_recipes = libffi
+
 [buildozer]
 log_level = 2
 warn_on_root = 0
