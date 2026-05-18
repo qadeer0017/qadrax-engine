@@ -6,7 +6,8 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 5.2
 
-requirements = python3,kivy==2.3.0,kivymd==1.1.1,requests,certifi,urllib3,chardet,idna,plyer
+# Requirements mein plyer ko remove kar ke pure native channels rakhein taaki compiling bach jaye
+requirements = python3,kivy==2.3.0,kivymd==1.1.1,requests,certifi,urllib3,chardet,idna
 
 orientation = portrait
 fullscreen = 0
@@ -20,8 +21,8 @@ android.private_storage = 1
 android.accept_sdk_license = True
 android.skip_bytecode = 1
 
-# Is line ko add/verify karein taaki libffi compile na ho jo error de rahi hai
-android.blacklist_recipes = libffi
+# In recipes ko strictly blacklist karein taaki autoconf compile hi na kare
+android.blacklist_recipes = libffi, openssl, sqlite3
 
 [buildozer]
 log_level = 2
