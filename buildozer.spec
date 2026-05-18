@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 5.2
 
-# Requirements mein plyer ko remove kar ke pure native channels rakhein taaki compiling bach jaye
+# Requirements ko minimal pre-built package standard par rakh rahe hain
 requirements = python3,kivy==2.3.0,kivymd==1.1.1,requests,certifi,urllib3,chardet,idna
 
 orientation = portrait
@@ -21,8 +21,9 @@ android.private_storage = 1
 android.accept_sdk_license = True
 android.skip_bytecode = 1
 
-# In recipes ko strictly blacklist karein taaki autoconf compile hi na kare
+# P4A core framework ko completely block karne ke liye strict lines
 android.blacklist_recipes = libffi, openssl, sqlite3
+android.meta_data = com.google.android.gms.version=@integer/google_play_services_version
 
 [buildozer]
 log_level = 2
