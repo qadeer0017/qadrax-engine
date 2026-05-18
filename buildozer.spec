@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 5.2
 
-requirements = python3,kivy==2.3.0,kivymd==1.1.1,requests,certifi,urllib3,chardet,idna
+requirements = python3,kivy==2.3.0,kivymd==1.1.1,requests,certifi,urllib3,chardet,idna,plyer
 
 orientation = portrait
 fullscreen = 0
@@ -19,7 +19,6 @@ android.ndk_api = 24
 android.private_storage = 1
 android.accept_sdk_license = True
 android.skip_bytecode = 1
-android.blacklist_recipes = libffi
 
 [buildozer]
 log_level = 2
