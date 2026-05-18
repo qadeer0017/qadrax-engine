@@ -2,14 +2,12 @@ import os
 import requests
 from datetime import datetime
 from kivy.clock import Clock
-from kivy.core.audio import SoundLoader
 from kivy.lang import Builder
 from kivy.properties import StringProperty, BooleanProperty, NumericProperty
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivymd.app import MDApp
-from plyer import vibrator, notification, filechooser
-from kivy.utils import platform as kv_platform
+from plyer import vibrator, notification
 
 SERVER_URL = "https://qadeer0017.pythonanywhere.com/analyze"
 REFRESH_SECONDS = 900
@@ -28,7 +26,7 @@ BoxLayout:
             size: self.size
 
     Label:
-        text: "QADRAX ENGINE v5.2 NETWORK"
+        text: "QADRAX ENGINE v5.2 STABLE"
         size_hint_y: None
         height: "60dp"
         font_size: "22sp"
@@ -42,16 +40,8 @@ BoxLayout:
         spacing: "5dp"
 
         Button:
-            text: "ANALYZE"
+            text: "ANALYZE NOW"
             on_release: app.analyze_market()
-
-        Button:
-            text: "MUTE"
-            on_release: app.toggle_mute()
-
-        Button:
-            text: "CUSTOM"
-            on_release: app.pick_sound()
 
     BoxLayout:
         size_hint_y: None
@@ -62,7 +52,7 @@ BoxLayout:
             active: app.vibration_enabled
             on_active: app.vibration_enabled = self.active
         Label:
-            text: "POPUP"
+            text: "POPUP ALERT"
         Switch:
             active: app.popup_enabled
             on_active: app.popup_enabled = self.active
@@ -91,31 +81,15 @@ BoxLayout:
 
 class QadraxApp(MDApp):
     dashboard_text = StringProperty("Ready to Sync with Cloud Engine Matrix...")
-    mute = BooleanProperty(False)
     vibration_enabled = BooleanProperty(True)
     popup_enabled = BooleanProperty(True)
     alert_duration = NumericProperty(5)
-    sound_path = StringProperty("")
-    use_default_phone_ringtone = BooleanProperty(True)
-    _android_ref = None
 
     def build(self):
         self.theme_cls.theme_style = "Dark"
         Clock.schedule_interval(self.analyze_market, REFRESH_SECONDS)
         Clock.schedule_once(self.analyze_market, 2)
         return Builder.load_string(KV)
-
-    def pick_sound(self):
-        try: filechooser.open_file(on_selection=self._on_sound_select, filters=[("Audio", "*.mp3", "*.wav")])
-        except: pass
-
-    def _on_sound_select(self, selection):
-        if selection:
-            self.sound_path = selection[0]
-            self.use_default_phone_ringtone = False
-
-    def toggle_mute(self):
-        self.mute = not self.mute
 
     def analyze_market(self, *args):
         global last_bos_alert, last_sweep_alert
@@ -141,7 +115,7 @@ class QadraxApp(MDApp):
                     last_sweep_alert = latest
 
             def format_list(levels):
-                return "".join([f"• {float(x):.2f}\\n" for x in levels]) if levels else "NO ACTIVE LEVELS\\n"
+                return "".join([f"• {float(x):.2f}\n" for x in levels]) if levels else "NO ACTIVE LEVELS\n"
 
             out = f"""
 QADRAX ENGINE v5.2 FULL NETWORK
@@ -188,8 +162,8 @@ ACTIVE SWEEPS DETECTED
 ==================
 """
             if active_sweeps:
-                for s in active_sweeps: out += f"• {s}\\n"
-            else: out += "NO ACTIVE SWEEPS OPEN\\n"
+                for s in active_sweeps: out += f"• {s}\n"
+            else: out += "NO ACTIVE SWEEPS OPEN\n"
 
             out += f"""
 ==================
@@ -204,54 +178,25 @@ LONDON LOW: {float(data['london_low']):.2f}
 """
             self.dashboard_text = out.strip()
         except Exception as e:
-            self.dashboard_text = f"NETWORK SYNC ACTIVE:\\nWaiting for Cloud Server Node Endpoint Deployment..."
+            self.dashboard_text = f"NETWORK SYNC ACTIVE:\nWaiting for Cloud Server Node Endpoint Deployment..."
 
     def trigger_alert(self, title, msg):
-        if self.mute: return
         try:
+            # Vibration Execution
             if self.vibration_enabled: 
-                try: vibrator.vibrate(500 if kv_platform == "android" else 0.5)
+                try: vibrator.vibrate(0.5)
                 except: pass
+            
+            # System Push Notification via Plyer
             notification.notify(title=title, message=msg, timeout=int(self.alert_duration))
+            
+            # Visual Popup UI
             if self.popup_enabled:
                 p = Popup(title=title, content=Label(text=msg), size_hint=(0.8, 0.3))
                 p.open()
                 Clock.schedule_once(lambda dt: p.dismiss(), self.alert_duration)
-            self._play_alert_sound()
-        except: pass
-
-    def _stop_active_android_ringtone(self):
-        rt = getattr(self, "_android_ref", None)
-        if rt:
-            try:
-                if rt.isPlaying(): rt.stop()
-            except: pass
-            self._android_ref = None
-
-    def _play_android_default_ringtone(self):
-        try:
-            from jnius import autoclass
-            self._stop_active_android_ringtone()
-            PythonActivity = autoclass("org.kivy.android.PythonActivity")
-            RingtoneManager = autoclass("android.media.RingtoneManager")
-            activity = PythonActivity.mActivity
-            uri = RingtoneManager.getActualDefaultRingtoneUri(activity, RingtoneManager.TYPE_NOTIFICATION)
-            if uri is None: return
-            rt = RingtoneManager.getRingtone(activity, uri)
-            if not rt: return
-            self._android_ref = rt
-            rt.play()
-            Clock.schedule_once(lambda dt: self._stop_active_android_ringtone(), float(self.alert_duration))
-        except: pass
-
-    def _play_alert_sound(self):
-        if kv_platform == "android":
-            if self.use_default_phone_ringtone:
-                self._play_android_default_ringtone()
-                return
-        if self.sound_path and os.path.isfile(self.sound_path):
-            s = SoundLoader.load(self.sound_path)
-            if s: s.play()
+        except:
+            pass
 
 if __name__ == "__main__":
     QadraxApp().run()
