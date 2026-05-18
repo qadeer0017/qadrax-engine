@@ -1,52 +1,40 @@
-name: Build Android APK
-
-on:
+name: Build Qadrax Engine APK
+on: 
+  push:
+    branches: [ master, main ]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Source Code Node
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Setup Pristine Python 3.11 Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good libgstreamer-plugins-base1.0-dev openjdk-17-jdk unzip zip libtool-bin m4 autopoint gettext
+      - name: Install Pure Linux Compilation Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev sqlite3 bzip2 libbz2-dev liblzma-dev
 
-    - name: Install Buildozer
-      run: |
-        pip install --upgrade pip
-        pip install virtualenv Cython buildozer
+      - name: Install Core Pipeline Build Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install buildozer cython==0.29.36 virtualenv
 
-    - name: Reset Previous Broken Cache
-      run: |
-        rm -rf .buildozer/
-        rm -rf bin/
-        rm -rf ~/.buildozer/
+      - name: Execute Buildozer Cloud Packaging Engine
+        run: |
+          buildozer android debug
+        env:
+          TERM: xterm
 
-    - name: Build with Buildozer (Smart Bypass)
-      run: |
-        # Buildozer ke initial structures ko initialize karna
-        buildozer android p4a -- --help > /dev/null || true
-        
-        # SMART DUMMY RECIPE: Python core dependency crashes ko bypass karne ke liye include methods add kiye hain
-        mkdir -p .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/
-        echo "from pythonforandroid.recipe import Recipe" > .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py
-        echo "class LibffiRecipe(Recipe):" >> .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py
-        echo "    def build_arch(self, arch): print('CRITICAL FIX: Skipping broken libffi compilation successfully!')" >> .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py
-        echo "    def get_include_dirs(self, arch): return []" >> .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py
-        echo "    def get_lib_dir(self, arch): return ''" >> .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py
-        echo "recipe = LibffiRecipe()" >> .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py
-        
-        # Final Compilation Run
-        YES=1 buildozer -v android debug
-      env:
-        ANDROID_HOME: /usr/local/lib/android/sdk
+      - name: Extract and Deploy Certified APK File
+        uses: actions/upload-artifact@v4
+        with:
+          name: Qadrax-Engine-5.2-Debug-APK
+          path: bin/*.apk
