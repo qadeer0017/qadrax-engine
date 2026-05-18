@@ -14,7 +14,6 @@ env:
 
 jobs:
   build-android:
-    # Strict Legacy Matrix Core match karne ke liye Ubuntu 22.04 use kar rahe hain
     runs-on: ubuntu-22.04
 
     steps:
@@ -62,20 +61,25 @@ jobs:
           bzip2 \
           libbz2-dev
 
-    - name: Install Cython & Buildozer Tools
+    - name: Install Cython & Buildozer Infrastructure
       run: |
         pip install --upgrade pip
         pip install "cython<3.0.0"
         pip install buildozer virtualenv sh
 
-    - name: Force Purge Artifact System
+    - name: Inject Python 3.11 Stability Layer for P4A
       run: |
+        # Hard system clean matching pattern
         rm -rf ~/.buildozer
         rm -rf .buildozer
-        mkdir -p .buildozer
+        mkdir -p ~/.buildozer/android/platform/
+        cd ~/.buildozer/android/platform/
+        # Stable toolchain branch clone kar rahe hain jahan python 3.14 experimental forced nahi hai
+        git clone --branch release-2024.01.21 --single-branch https://github.com/kivy/python-for-android.git python-for-android
 
     - name: Execute Android APK Target Production Build
       run: |
+        cd $GITHUB_WORKSPACE
         buildozer -v android debug
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
