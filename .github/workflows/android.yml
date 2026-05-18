@@ -37,7 +37,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildozer-
 
-    - name: Install System Dependencies & Build Tools
+    - name: Install System Dependencies & Build Tools (Fixed)
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
@@ -62,6 +62,8 @@ jobs:
           autoconf \
           automake \
           libtool \
+          gettext \
+          m4 \
           patch \
           unzip \
           zip \
@@ -73,10 +75,12 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install "cython<3.0.0"
-        pip install buildozer virtualenv
+        pip install buildozer virtualenv sh
 
     - name: Clean Previous Broken Artifact Profiles
       run: |
+        # Purane tute hue build ki directories ko clear karna zaroori hai
+        rm -rf .buildozer/android/platform/build-*
         buildozer android clean || true
 
     - name: Execute Android APK Target Production Build
@@ -84,6 +88,9 @@ jobs:
         yes | buildozer -v android debug
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
+        # GitHub Actions ke default naye NDK ko bypass karne ke liye env variables khaali choren takay buildozer apna sahi version (r25c) download kare
+        ANDROID_NDK_HOME: ""
+        ANDROID_NDK_ROOT: ""
 
     - name: Upload Qadrax Engine APK Package Node Artifact
       uses: actions/upload-artifact@v4
