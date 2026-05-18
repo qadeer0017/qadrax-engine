@@ -7,6 +7,12 @@ on:
     branches: [ "master", "main" ]
   workflow_dispatch:
 
+# Global level par system default paths ko overwrite karna
+env:
+  ANDROID_NDK_HOME: ""
+  ANDROID_NDK_ROOT: ""
+  ANDROID_NDK: ""
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -33,11 +39,11 @@ jobs:
           ~/.buildozer
           .buildozer
           ~/.android
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ github.run_number }}
         restore-keys: |
           ${{ runner.os }}-buildozer-
 
-    - name: Install System Dependencies & Build Tools (Fixed)
+    - name: Install System Dependencies & Build Tools (Strict Grid)
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
@@ -77,20 +83,22 @@ jobs:
         pip install "cython<3.0.0"
         pip install buildozer virtualenv sh
 
-    - name: Clean Previous Broken Artifact Profiles
+    - name: Complete System Purge & Clean
       run: |
-        # Purane tute hue build ki directories ko clear karna zaroori hai
-        rm -rf .buildozer/android/platform/build-*
+        # Purane cache directories aur glt configuration matrices ko poori tarha delete karna
+        rm -rf ~/.buildozer/android/platform/*
+        rm -rf .buildozer/android/platform/*
         buildozer android clean || true
 
     - name: Execute Android APK Target Production Build
       run: |
-        yes | buildozer -v android debug
+        # Explicit version control bypass pattern
+        buildozer -v android debug
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
-        # GitHub Actions ke default naye NDK ko bypass karne ke liye env variables khaali choren takay buildozer apna sahi version (r25c) download kare
         ANDROID_NDK_HOME: ""
         ANDROID_NDK_ROOT: ""
+        ANDROID_NDK: ""
 
     - name: Upload Qadrax Engine APK Package Node Artifact
       uses: actions/upload-artifact@v4
