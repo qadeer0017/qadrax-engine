@@ -31,18 +31,7 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Cache Buildozer and Android SDK Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.buildozer
-          .buildozer
-          ~/.android
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ github.run_number }}
-        restore-keys: |
-          ${{ runner.os }}-buildozer-
-
-    - name: Install System Dependencies & Build Tools (Macro Fix)
+    - name: Install System Dependencies & Build Tools (Strict Reset)
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
@@ -58,11 +47,6 @@ jobs:
           libavformat-dev \
           libavcodec-dev \
           zlib1g-dev \
-          libsqlite3-dev \
-          sqlite3 \
-          libssl-dev \
-          libffi-dev \
-          libgmp-dev \
           pkg-config \
           autoconf \
           automake \
@@ -83,11 +67,12 @@ jobs:
         pip install "cython<3.0.0"
         pip install buildozer virtualenv sh
 
-    - name: Force Purge Corrupted Macro Components
+    - name: Hard Purge Directory Structure
       run: |
-        rm -rf ~/.buildozer/android/platform/*
-        rm -rf .buildozer/android/platform/*
-        buildozer android clean || true
+        # Khas tor par purane tute hue platform dependencies ko clear karna
+        rm -rf ~/.buildozer
+        rm -rf .buildozer
+        mkdir -p .buildozer
 
     - name: Execute Android APK Target Production Build
       run: |
