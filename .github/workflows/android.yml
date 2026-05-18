@@ -1,80 +1,93 @@
-name: Build Qadrax Engine APK
-on: 
+name: Qadrax Engine Android Build Workflow
+
+on:
   push:
-    branches: [ master, main ]
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build-android:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code Node
-        uses: actions/checkout@v4
+    - name: Checkout Code Repository
+      uses: actions/checkout@v4
 
-      - name: Setup Pristine Python 3.11 Environment
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    - name: Setup Python Environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
-      - name: Install Pure Linux Compilation Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev sqlite3 bzip2 libbz2-dev liblzma-dev
+    - name: Setup Java JDK Environment
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Install Core Pipeline Build Tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install buildozer cython==0.29.36 virtualenv
+    - name: Cache Buildozer and Android SDK Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.buildozer
+          .buildozer
+          ~/.android
+        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-buildozer-
 
-      - name: Execute Buildozer Cloud Packaging Engine
-        run: |
-          buildozer android debug
-        env:
-          TERM: xterm
+    - name: Install System Dependencies & Build Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          build-essential \
+          git \
+          ffmpeg \
+          libsdl2-dev \
+          libsdl2-image-dev \
+          libsdl2-mixer-dev \
+          libsdl2-ttf-dev \
+          libportmidi-dev \
+          libswscale-dev \
+          libavformat-dev \
+          libavcodec-dev \
+          zlib1g-dev \
+          libsqlite3-dev \
+          sqlite3 \
+          libssl-dev \
+          libffi-dev \
+          libgmp-dev \
+          pkg-config \
+          autoconf \
+          automake \
+          libtool \
+          patch \
+          unzip \
+          zip \
+          unrar-free \
+          bzip2 \
+          libbz2-dev
 
-      - name: Extract and Deploy Certified APK File
-        uses: actions/upload-artifact@v4
-        with:
-          name: Qadrax-Engine-5.2-Debug-APK
-          path: bin/*.apk
-name: Build Qadrax Engine APK
-on: 
-  push:
-    branches: [ master, main ]
-  workflow_dispatch:
+    - name: Install Cython & Buildozer Package Tools
+      run: |
+        pip install --upgrade pip
+        pip install "cython<3.0.0"
+        pip install buildozer virtualenv
 
-jobs:
-  build:
-    runs-on: ubuntu-22.04
+    - name: Clean Previous Broken Artifact Profiles
+      run: |
+        buildozer android clean || true
 
-    steps:
-      - name: Checkout Source Code Node
-        uses: actions/checkout@v4
+    - name: Execute Android APK Target Production Build
+      run: |
+        yes | buildozer -v android debug
+      env:
+        BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
 
-      - name: Setup Pristine Python 3.11 Environment
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Pure Linux Compilation Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev sqlite3 bzip2 libbz2-dev liblzma-dev
-
-      - name: Install Core Pipeline Build Tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install buildozer cython==0.29.36 virtualenv
-
-      - name: Execute Buildozer Cloud Packaging Engine
-        run: |
-          buildozer android debug
-        env:
-          TERM: xterm
-
-      - name: Extract and Deploy Certified APK File
-        uses: actions/upload-artifact@v4
-        with:
-          name: Qadrax-Engine-5.2-Debug-APK
-          path: bin/*.apk
+    - name: Upload Qadrax Engine APK Package Node Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Qadrax-Engine-v5.2-Android-Debug
+        path: bin/*.apk
+        retention-days: 7
