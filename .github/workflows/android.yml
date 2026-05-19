@@ -74,8 +74,8 @@ jobs:
 
     - name: Execute Android APK Target Production Build
       run: |
-        # --p4a.branch parameter lagaya hai taaki buildozer forcefully sirf stable target compile kare
-        buildozer -v android debug --p4a.branch=release-2024.01.21
+        # Quiet execution lagayi hai taaki 26,000 lines ka graphic data log window ko crash na kare
+        buildozer -q android debug --p4a.branch=release-2024.01.21
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
         ANDROID_NDK_HOME: ""
