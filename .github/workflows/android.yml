@@ -1,9 +1,93 @@
-- name: Execute Android APK Target Production Build
+name: Qadrax Engine Android Build Workflow
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+
+env:
+  ANDROID_NDK_HOME: ""
+  ANDROID_NDK_ROOT: ""
+  ANDROID_NDK: ""
+
+jobs:
+  build-android:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout Code Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python Environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Setup Java JDK Environment
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Install System Dependencies & Stable Build Tools
       run: |
-        # Quiet mode (-q) lagaya hai taaki long truncated graphic logs terminal stream ko crash na karein
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          build-essential \
+          git \
+          ffmpeg \
+          libsdl2-dev \
+          libsdl2-image-dev \
+          libsdl2-mixer-dev \
+          libsdl2-ttf-dev \
+          libportmidi-dev \
+          libswscale-dev \
+          libavformat-dev \
+          libavcodec-dev \
+          zlib1g-dev \
+          pkg-config \
+          autoconf \
+          automake \
+          libtool \
+          libtool-bin \
+          gettext \
+          m4 \
+          patch \
+          unzip \
+          zip \
+          unrar-free \
+          bzip2 \
+          libbz2-dev
+
+    - name: Install Cython & Buildozer Infrastructure
+      run: |
+        pip install --upgrade pip
+        pip install "cython<3.0.0"
+        pip install buildozer virtualenv sh
+
+    - name: Inject Python 3.11 Stability Layer for P4A
+      run: |
+        rm -rf ~/.buildozer
+        rm -rf .buildozer
+        mkdir -p ~/.buildozer/android/platform/
+        cd ~/.buildozer/android/platform/
+        git clone --branch release-2024.01.21 --single-branch https://github.com/kivy/python-for-android.git python-for-android
+
+    - name: Execute Android APK Target Production Build
+      run: |
+        cd $GITHUB_WORKSPACE
         buildozer -q android debug
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
         ANDROID_NDK_HOME: ""
         ANDROID_NDK_ROOT: ""
         ANDROID_NDK: ""
+
+    - name: Upload Qadrax Engine APK Package Node Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Qadrax-Engine-v5.2-Android-Debug
+        path: bin/*.apk
+        retention-days: 7
