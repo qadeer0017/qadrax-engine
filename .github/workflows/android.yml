@@ -61,24 +61,21 @@ jobs:
           bzip2 \
           libbz2-dev
 
-    - name: Install Cython & Buildozer Infrastructure
+    - name: Install Cython & Fixed Buildozer
       run: |
         pip install --upgrade pip
         pip install "cython<3.0.0"
         pip install buildozer virtualenv sh
 
-    - name: Inject Python 3.11 Stability Layer for P4A
+    - name: Complete System Hard Purge
       run: |
         rm -rf ~/.buildozer
         rm -rf .buildozer
-        mkdir -p ~/.buildozer/android/platform/
-        cd ~/.buildozer/android/platform/
-        git clone --branch release-2024.01.21 --single-branch https://github.com/kivy/python-for-android.git python-for-android
 
     - name: Execute Android APK Target Production Build
       run: |
-        cd $GITHUB_WORKSPACE
-        buildozer -q android debug
+        # --p4a.branch parameter lagaya hai taaki buildozer forcefully sirf stable target compile kare
+        buildozer -v android debug --p4a.branch=release-2024.01.21
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
         ANDROID_NDK_HOME: ""
