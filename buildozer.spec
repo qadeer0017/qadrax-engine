@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 5.2
 
-# Mismatch se bachne ke liye requirements ko clean kar diya hai
+# Requirements ko pure base line par rakh rahe hain taaki pre-built wheels pull hon
 requirements = python3,kivy==2.3.0,kivymd==1.1.1,requests,certifi,urllib3,chardet,idna
 
 orientation = portrait
@@ -21,7 +21,7 @@ android.private_storage = 1
 android.accept_sdk_license = True
 android.skip_bytecode = 1
 
-# Pre-compiled environment locks
+# Compile krte waqt problematic tools ko blacklist recipes control mein rakha hai
 android.blacklist_recipes = libffi, openssl, sqlite3
 
 [buildozer]
